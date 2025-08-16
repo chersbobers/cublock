@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Chers Unblock</title>
     <style>
         * {
             margin: 0;
@@ -126,40 +126,74 @@
         function loadSite() {
             const url = input.value.trim();
             if (!url) return;
-
+            
             clearOutput();
-            log('Connecting... (this may take a few seconds)', 'loading');
-
+            log('Connecting...', 'loading');
+            
             let fullUrl = url;
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 fullUrl = 'https://' + url;
             }
-
-            const iframe = document.createElement('iframe');
-            iframe.src = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
-            iframe.style.display = 'block';
-            iframe.style.width = '100%';
-            iframe.style.height = '500px';
-
-            const timeout = setTimeout(() => {
-                iframe.remove();
-                log('Connection timed out', 'error');
-            }, 20000); // 20s timeout
-
-            iframe.onload = () => {
-                clearTimeout(timeout);
-                log('Connected successfully!', 'success');
-            };
-
-            iframe.onerror = () => {
-                clearTimeout(timeout);
-                iframe.remove();
-                log('Connection failed', 'error');
-            };
-
-            const container = document.getElementById('frameContainer');
-            container.innerHTML = '';
-            container.appendChild(iframe);
+            
+            const proxies = [
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(fullUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(fullUrl)}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(fullUrl)}`,
+                `https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`,
+                `https://cors-anywhere.herokuapp.com/${fullUrl}`,
+                `https://thingproxy.freeboard.io/fetch/${fullUrl}`,
+                `https://jsonp.afeld.me/?url=${encodeURIComponent(fullUrl)}`,
+                `https://crossorigin.me/${fullUrl}`,
+                `https://yacdn.org/proxy/${fullUrl}`,
+                `https://proxy-cors.onrender.com/${fullUrl}`,
+                `https://floating-headland-95050.herokuapp.com/${fullUrl}`,
+                `https://cors-bridged.onrender.com/api/cors?url=${encodeURIComponent(fullUrl)}`,
+                `https://api.proxify.io/?url=${encodeURIComponent(fullUrl)}`,
+                `https://proxy.techzbots1.workers.dev/?u=${encodeURIComponent(fullUrl)}`,
+                `https://corsproxy.github.io/?${encodeURIComponent(fullUrl)}`,
+                `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(fullUrl)}`,
+                `https://api.1337x.unblocker.cc/get?url=${encodeURIComponent(fullUrl)}`,
+                `https://cors-fix.org/${fullUrl}`,
+                `https://proxy-server.sebastianhampel.workers.dev/?url=${encodeURIComponent(fullUrl)}`,
+                fullUrl
+            ];
+            
+            let currentProxy = 0;
+            
+            function tryNextProxy() {
+                if (currentProxy >= proxies.length) {
+                    log('Connection failed', 'error');
+                    return;
+                }
+                
+                log(`Trying method ${currentProxy + 1}...`, 'loading');
+                
+                const iframe = document.createElement('iframe');
+                iframe.src = proxies[currentProxy];
+                
+                const timeout = setTimeout(() => {
+                    iframe.remove();
+                    currentProxy++;
+                    tryNextProxy();
+                }, 4000);
+                
+                iframe.onload = function() {
+                    clearTimeout(timeout);
+                    log('Connected successfully!', 'success');
+                    document.getElementById('frameContainer').appendChild(iframe);
+                };
+                
+                iframe.onerror = function() {
+                    clearTimeout(timeout);
+                    iframe.remove();
+                    currentProxy++;
+                    tryNextProxy();
+                };
+                
+                currentProxy++;
+            }
+            
+            tryNextProxy();
         }
         
         input.addEventListener('keypress', function(e) {
