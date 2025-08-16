@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/site/:url*", "destination": "/api/view?url=:url*" }
+  ]
+}

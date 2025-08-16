@@ -128,38 +128,24 @@
             if (!url) return;
 
             clearOutput();
-            log('Connecting... (this may take a few seconds)', 'loading');
+            log('Opening in new tab...', 'loading');
 
             let fullUrl = url;
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 fullUrl = 'https://' + url;
             }
 
-            const iframe = document.createElement('iframe');
-            iframe.src = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
-            iframe.style.display = 'block';
-            iframe.style.width = '100%';
-            iframe.style.height = '500px';
+            const encoded = encodeURIComponent(fullUrl);
+            const openUrl = `/site/${encoded}`;
 
-            const timeout = setTimeout(() => {
-                iframe.remove();
-                log('Connection timed out', 'error');
-            }, 20000); // 20s timeout
-
-            iframe.onload = () => {
-                clearTimeout(timeout);
-                log('Connected successfully!', 'success');
-            };
-
-            iframe.onerror = () => {
-                clearTimeout(timeout);
-                iframe.remove();
-                log('Connection failed', 'error');
-            };
-
-            const container = document.getElementById('frameContainer');
-            container.innerHTML = '';
-            container.appendChild(iframe);
+            const win = window.open(openUrl, '_blank');
+            if (win) {
+                log('Opened in new tab', 'success');
+            } else {
+                // fallback if popup blocked
+                log('Popup blocked — opening in same tab', 'error');
+                window.location.href = openUrl;
+            }
         }
         
         input.addEventListener('keypress', function(e) {
